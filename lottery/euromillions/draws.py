@@ -56,7 +56,7 @@ class EuromillionResults:
 
     def __getitem__(self, key) :
         return self.draws[key]
-        
+
 
     def _is_data_local(self) -> bool:
         files = [file_path for file_path in EUROMILLIONS_ORIGINAL_PATH.glob('*.csv') ]
@@ -105,10 +105,14 @@ class EuromillionResults:
 
     def _format_dataframe_list(self, df_list: List[pd.DataFrame]) -> List[pd.DataFrame]:
         # exception for first file
-        head_df = self._format_dataframe(df=df_list[0], date_format="%Y%m%d")
-        tail_dfs = [self._format_dataframe(df) for df in df_list[1:]]
-        formatted_dfs = [head_df]
-        formatted_dfs.extend(tail_dfs)
+        first_df = self._format_dataframe(df=df_list[0], date_format="%Y%m%d")
+
+        # reformat first date for 3rd file..
+        df_list[2].at[0, "date_de_tirage"] = datetime.strptime(df_list[2].at[0, "date_de_tirage"], '%d/%m/%y').strftime('%d/%m/%Y')
+
+        rest_dfs = [self._format_dataframe(df) for df in df_list[1:]]
+        formatted_dfs = [first_df]
+        formatted_dfs.extend(rest_dfs)
         return formatted_dfs
 
     def _load(self, force: bool = False) -> None:
