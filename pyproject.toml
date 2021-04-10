@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "lottery"
+version = "0.3.0"
+description = "Explore and analyze lottery draws."
+authors =["Nicolas Voisin <voisin.nicolas@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^1.2.3"
+pathlib = "^1.0.1"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+ipykernel = "^5.5.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
