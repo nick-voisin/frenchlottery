@@ -1,4 +1,4 @@
-from lottery.euromillions.draws import EuromillionResults
+from lottery import EuromillionResults
 
 results = EuromillionResults()
 
