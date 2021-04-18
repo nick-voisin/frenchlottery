@@ -153,6 +153,7 @@ class EuromillionResults:
             df.set_index("Date", inplace=True)
             return df
         else:
+            print("Cannot create results dataframe - must format data beforehand.")
             return None
 
     def export(self, folder_path: Path = None) -> None:
@@ -161,4 +162,5 @@ class EuromillionResults:
             path = path / "euromillions.csv"
             self.to_dataframe().to_csv(path, sep=";")
         else:
+            print("Cannot export results - must format data beforehand.")
             return None
