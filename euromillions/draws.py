@@ -6,12 +6,11 @@ from dataclasses import dataclass, field
 import pandas as pd
 from pathlib import Path
 
-from lottery.helper.pandas_helper import loop
-from lottery.helper.file_helper import download_zipped_file, save_zipped_file
+from euromillions.helper import loop, download_zipped_file, save_zipped_file
 
 
-EUROMILLIONS_ORIGINAL_PATH = Path(os.path.abspath(__file__)).parents[1] / "data" / "euromillions" / "original"
-EUROMILLIONS_FORMATTED_PATH = Path(os.path.abspath(__file__)).parents[1] / "data" / "euromillions" / "formatted"
+EUROMILLIONS_ORIGINAL_PATH = Path(os.path.abspath(__file__)).parents[0] / "data" / "original"
+EUROMILLIONS_FORMATTED_PATH = Path(os.path.abspath(__file__)).parents[0] / "data" / "export"
 EUROMILLIONS_URLS = [
     "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip",
     "https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip",
@@ -44,40 +43,29 @@ class EuromillionDraw:
 
 
 class EuromillionResults:
-    def __init__(self, update: bool = False):
+    def __init__(self, force_download: bool = False):
         self.draws: Optional[List[EuromillionDraw]] = []
         self.original_data: Optional[pd.DataFrame] = None
         self.is_sorted: bool = False
-        self.is_formatted: bool = False
 
-        self._launch(update)
+        self._is_downloaded: bool = False
+        self._launch(force_download)
 
     def __str__(self):
-        if self.is_formatted:
-            for draw in self.draws:
-                print(draw)
+        for draw in self.draws:
+            print(draw)
 
     def __getitem__(self, key):
         return self.draws[key]
 
-    def _check_downloaded_files(self) -> bool:
-        files = [file_path for file_path in EUROMILLIONS_ORIGINAL_PATH.glob("*.csv")]
-        if len(files) == 6:
-            self.is_downloaded = True
-            return True
-        else:
-            return False
+    def _download(self, force_download: bool = False) -> None:
+        if force_download or not self._is_downloaded:
+            for index, url in enumerate(EUROMILLIONS_URLS):
+                zipped_file = download_zipped_file(url)
+                save_zipped_file(zipped_file, EUROMILLIONS_ORIGINAL_PATH, f"euromillions_{index+1}.csv")
+            self._is_downloaded = True
 
-    def _download_files(self) -> None:
-        for index, url in enumerate(EUROMILLIONS_URLS):
-            zipped_file = download_zipped_file(url)
-            save_zipped_file(zipped_file, EUROMILLIONS_ORIGINAL_PATH, f"euromillions_{index+1}.csv")
-
-    def _load_files_to_dataframe_list(self) -> List[pd.DataFrame]:
-        path = EUROMILLIONS_ORIGINAL_PATH
-        return [pd.read_csv(file_path, sep=";", index_col=False) for file_path in path.glob("*.csv")]
-
-    def _format_dataframe(self, df: pd.DataFrame, date_format="%d/%m/%Y") -> pd.DataFrame:
+    def _format_dataframe(self, df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.DataFrame:
         formated_df = pd.DataFrame()
         formated_df["Date"] = df["date_de_tirage"]
         formated_df["B1"] = df["boule_1"]
@@ -106,36 +94,33 @@ class EuromillionResults:
         formatted_dfs.extend(rest_dfs)
         return formatted_dfs
 
-    def _load(self, force: bool = False) -> None:
-        if force or not self._check_downloaded_files():
-            self._download_files()
-
-    def _format(self, force: bool = False) -> None:
-        if self.is_formatted and not force:
-            return
-
-        if self._check_downloaded_files():
-            raw_dataframes = self._load_files_to_dataframe_list()
+    def _format(self) -> None:
+        if self._is_downloaded:
+            raw_dataframes = [
+                pd.read_csv(file_path, sep=";", index_col=False, encoding="latin-1")
+                for file_path in EUROMILLIONS_ORIGINAL_PATH.glob("*.csv")
+            ]
             formatted_dataframe = self._format_dataframe_list(raw_dataframes)
             self.original_data = pd.concat(formatted_dataframe, axis=0)
             for row in loop(self.original_data):
-                balls, stars = [row.B1, row.B2, row.B3, row.B4, row.B5], [
-                    row.S1,
-                    row.S2,
-                ]
+                balls, stars = [row.B1, row.B2, row.B3, row.B4, row.B5], [row.S1, row.S2]
                 draw = EuromillionDraw(date=row.Date, balls=balls, stars=stars)
                 self.draws.append(draw)
-            self.is_formatted = True
-        else:
-            raise Exception("Please download data beforehand via load.")
 
     def _launch(self, force_download: bool = False) -> None:
-        self._load(force_download)
-        self._format()
+        try:
+            self._download(force_download)
+            try:
+                self._format()
+            except Exception as e:
+                print(f"Error formatting data: {e}")
+        except Exception as e:
+            print(f"Error downloading data: {e}")
 
     def sort(self) -> None:
         for draw in self.draws:
             draw.sort()
+        self.is_sorted = True
 
     def update(self) -> None:
         zipped_file = download_zipped_file(EUROMILLIONS_URLS[-1])
@@ -144,23 +129,15 @@ class EuromillionResults:
             EUROMILLIONS_ORIGINAL_PATH,
             f"euromillions_{len(EUROMILLIONS_URLS)}.csv",
         )
-        self._format(force=True)
+        self._format()
 
-    def to_dataframe(self) -> Optional[pd.DataFrame]:
-        if self.is_formatted:
-            results = [draw.to_list() for draw in self.draws]
-            df = pd.DataFrame(results, columns=["Date", "B1", "B2", "B3", "B4", "B5", "S1", "S2"])
-            df.set_index("Date", inplace=True)
-            return df
-        else:
-            print("Cannot create results dataframe - must format data beforehand.")
-            return None
+    def to_dataframe(self) -> pd.DataFrame:
+        results = [draw.to_list() for draw in self.draws]
+        df = pd.DataFrame(results, columns=["Date", "B1", "B2", "B3", "B4", "B5", "S1", "S2"])
+        df.set_index("Date", inplace=True)
+        return df
 
     def export(self, folder_path: Path = None) -> None:
-        if self.is_formatted:
-            path = EUROMILLIONS_FORMATTED_PATH if folder_path is None else folder_path
-            path = path / "euromillions.csv"
-            self.to_dataframe().to_csv(path, sep=";")
-        else:
-            print("Cannot export results - must format data beforehand.")
-            return None
+        path = EUROMILLIONS_FORMATTED_PATH if folder_path is None else folder_path
+        path = path / "euromillions.csv"
+        self.to_dataframe().to_csv(path, sep=";")

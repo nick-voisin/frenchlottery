@@ -1,11 +1,9 @@
-from pathlib import Path
+import collections
 import requests
 import zipfile
 import io
-
-def remove_csv_files(folder_path: Path) -> None:
-    for file_path in folder_path.glob('*.csv'):
-        file_path.unlink()
+from pathlib import Path
+import pandas as pd
 
 
 def download_zipped_file(url: str) -> zipfile.ZipFile:
@@ -24,6 +22,26 @@ def save_zipped_file(zip_file: zipfile.ZipFile, save_folder_path: Path, save_fil
 
     if selected_path_filename.exists():
         selected_path_filename.unlink()
-    
+
     zip_file.extract(extracted_file_name, save_folder_path)
     extracted_path_filename.rename(selected_path_filename)
+
+
+def loop(df: pd.DataFrame):
+    """
+    Creates a generator to iterate over a Pandas DataFrame : yields a named tuple for each row.
+    Tuple properties are based on provided DataFrame columns.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    Yields
+    -------
+    Generator[Tuple]
+    """
+    col_names_concat = [col_name for col_name in list(df.columns)]
+    col_names_concat.insert(0, "Date")
+    Row = collections.namedtuple("Row", col_names_concat)
+    for row in df.itertuples():
+        yield Row(*row)
