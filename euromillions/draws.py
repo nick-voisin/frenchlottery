@@ -10,7 +10,7 @@ from euromillions.helper import loop, download_zipped_file, save_zipped_file
 
 
 EUROMILLIONS_ORIGINAL_PATH = Path(os.path.abspath(__file__)).parents[0] / "data" / "original"
-EUROMILLIONS_FORMATTED_PATH = Path(os.path.abspath(__file__)).parents[0] / "data" / "export"
+EUROMILLIONS_FORMATTED_PATH = Path(os.path.abspath(__file__)).parents[0] / "data" / "formatted"
 EUROMILLIONS_URLS = [
     "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip",
     "https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip",
@@ -38,8 +38,7 @@ class EuromillionDraw:
         self.stars.sort()
 
     def to_list(self) -> List[Any]:
-        values = [self.date]
-        return values + self.balls + self.stars
+        return [self.date] + self.balls + self.stars
 
 
 class EuromillionResults:

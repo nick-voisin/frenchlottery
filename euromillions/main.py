@@ -4,6 +4,8 @@ results = EuromillionResults()
 
 results.export()
 
-df = results.original_data
+df = results.to_dataframe()
 
-print(df)
+results.sort()
+
+df_sorted = results.to_dataframe()
