@@ -1,18 +1,18 @@
 [tool.poetry]
-name = "euromillions"
+name = "lottery"
 version = "0.3.0"
-description = "Explore and analyze euromillions draws."
-authors =["Nicolas Voisin <voisin.nicolas@gmail.com>"]
+description = ""
+authors = ["Nicolas Voisin <voisin.nicolas@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pandas = "^1.2.3"
-pathlib = "^1.0.1"
-requests = "^2.25.1"
+requests = "^2.27.1"
+pandas = "^1.4.1"
+ipykernel = "^6.9.1"
 
 [tool.poetry.dev-dependencies]
-black = "^20.8b1"
+black = "^22.1.0"
 ipykernel = "^6.0.3"
 
 [tool.black]
