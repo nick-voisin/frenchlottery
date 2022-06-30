@@ -1,91 +1,71 @@
-import collections
 import requests
 import io
-import os
-from typing import Optional, Union
-from pathlib import Path
 from zipfile import ZipFile
 
 import pandas as pd
 
-# Constants
-EXPORT_FILE_NAME = "euromillions.csv"
 
+def read_zipfile(zip_file: ZipFile) -> pd.DataFrame:
+    """
+    Reads the contents of the first file in the Zip Archive 'zip_file' and converts it to a DataFrame.
 
-def extract_zipfile(zip_file: ZipFile, save_folder_path: Path, save_file_name: str) -> None:
+    Args:
+        zip_file (ZipFile): Zip archive to read and extract.
 
-    if zip_file is None:
-        raise TypeError("Cannot extract file. Provided zip_file is none.")
+    Raises:
+        ValueError: No file found in zip archive.
+        IOError: Unknown error during the extraction.
+
+    Returns:
+        pd.DataFrame: Content of the first file in the Zip Archive.
+
+    """
 
     if not zip_file.filelist:
         raise ValueError("Cannot extract file. No file found in zip file.")
 
     try:
-        extracted_file_name = zip_file.filelist[0].filename
-        selected_path_filename = save_folder_path / save_file_name
-        extracted_path_filename = save_folder_path / extracted_file_name
-
-        if selected_path_filename.exists():
-            selected_path_filename.unlink()
-
-        zip_file.extract(extracted_file_name, save_folder_path)
-        extracted_path_filename.rename(selected_path_filename)
+        data = zip_file.read(name=zip_file.filelist[0].filename)
+        text_raw = data.decode("latin-1")
+        return pd.read_csv(io.StringIO(text_raw), sep=";", index_col=False)
 
     except Exception as e:
-        print(f"Error extracting file : {extracted_file_name}.")
-        raise e
+        raise IOError("Could not extract data from zipfile") from e
 
 
-def process_response(resp: requests.Response, save_folder_path: Path, save_file_name: str) -> None:
-    if resp.status_code != 200:
-        raise IOError(f"Request response with code {resp.status_code}.")
+def request_file(memoize: bool) -> requests.Response:
+    cache = {}
 
-    try:
-        zip_file = ZipFile(io.BytesIO(resp.content))
-        extract_zipfile(zip_file, save_folder_path, save_file_name)
-    except Exception as e:
-        raise RuntimeError("Could not process response.") from e
+    def get_data(url):
+        if not memoize or url not in cache:
+            response = requests.get(url)
+            if response.status_code != 200:
+                raise IOError(f"Request response returned with code {response.status_code}.")
+            cache[url] = response
 
+        return cache[url]
 
-def download_data(url: str, save_folder_path: Path, save_file_name: str) -> None:
-    try:
-        response = requests.get(url)
-        process_response(response, save_folder_path, save_file_name)
-    except Exception as e:
-        raise RuntimeError(f"Unable to download data from url : {url}") from e
+    return get_data
 
 
-def valid_or_current_path(path: Optional[Union[Path, str]] = None) -> Path:
-    if path is None:
-        return Path(os.path.abspath(os.getcwd())) / EXPORT_FILE_NAME
-    elif isinstance(path, Path):
-        if not path.is_dir():
-            raise OSError("Folder path does not exist.")
-    elif isinstance(path, str):
-        path = Path(path)
-        if not path.is_dir():
-            raise OSError("Folder path does not exist.")
-    else:
-        raise TypeError("Invalid type for provided path.")
-
-    return path / EXPORT_FILE_NAME
-
-
-def loop(df: pd.DataFrame):
+def download_zipfile(url: str, memoize: bool) -> pd.DataFrame:
     """
-    Creates a generator to iterate over a Pandas DataFrame : yields a named tuple for each row.
-    Tuple properties are based on provided DataFrame columns.
+    Donwload, extract and transform the content of Zip Archive at the given url into a Pandas DataFrame.
 
-    Parameters
-    ----------
-    df : pd.DataFrame
+    Args:
+        url (str): URL containing the Zip Archive.
 
-    Yields
-    -------
-    Generator[Tuple]
+    Raises:
+        IOError: Error downloading the Zip Archive.
+
+    Returns:
+        pd.DataFrame: Content of the first file in the Zip Archive for provided url.
+
     """
-    col_names_concat = [col_name for col_name in list(df.columns)]
-    col_names_concat.insert(0, "Date")
-    Row = collections.namedtuple("Row", col_names_concat)
-    for row in df.itertuples():
-        yield Row(*row)
+    try:
+
+        response = request_file(memoize)(url)
+        zip_file = ZipFile(io.BytesIO(response.content))
+        return read_zipfile(zip_file)
+    except Exception as e:
+        raise IOError(f"Unable to download data from url : {url}") from e
