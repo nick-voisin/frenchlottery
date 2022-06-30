@@ -1,6 +1,7 @@
 import requests
 import io
 from zipfile import ZipFile
+from functools import cache
 
 import pandas as pd
 
@@ -33,22 +34,15 @@ def read_zipfile(zip_file: ZipFile) -> pd.DataFrame:
         raise IOError("Could not extract data from zipfile") from e
 
 
-def request_file(memoize: bool) -> requests.Response:
-    cache = {}
-
-    def get_data(url):
-        if not memoize or url not in cache:
-            response = requests.get(url)
-            if response.status_code != 200:
-                raise IOError(f"Request response returned with code {response.status_code}.")
-            cache[url] = response
-
-        return cache[url]
-
-    return get_data
+@cache
+def request_url(url: str):
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise IOError(f"Request response returned with code {response.status_code}.")
+    return response
 
 
-def download_zipfile(url: str, memoize: bool) -> pd.DataFrame:
+def download_zipfile(url: str) -> pd.DataFrame:
     """
     Donwload, extract and transform the content of Zip Archive at the given url into a Pandas DataFrame.
 
@@ -63,8 +57,7 @@ def download_zipfile(url: str, memoize: bool) -> pd.DataFrame:
 
     """
     try:
-
-        response = request_file(memoize)(url)
+        response = request_url(url)
         zip_file = ZipFile(io.BytesIO(response.content))
         return read_zipfile(zip_file)
     except Exception as e:

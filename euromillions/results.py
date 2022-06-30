@@ -51,7 +51,7 @@ def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
         pd.DataFrame: Clean formatted dataframe.
     """
     # Format first dataframe with date format : YYYYMMDD
-    first_df = format_dataframe(df=raw_dataframes[0], date_format="%Y%m%d")
+    first_df = format_dataframe(raw_dataframes[0], date_format="%Y%m%d")
 
     # Modify date of first row of the third dataframe.
     wrong_date_format = raw_dataframes[2].at[0, "date_de_tirage"]
@@ -66,7 +66,13 @@ def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
     return pd.concat(formatted_dfs, axis=0)
 
 
-def get_results(memoize: bool = True) -> pd.DataFrame:
+def get_results() -> pd.DataFrame:
+    """Gets all the historical results of the Euromillion lottery from 2004 onwards into a pandas DataFrame.
+    Data is downloaded from the 'Francaise des Jeux' website.
+
+    Returns:
+        pd.DataFrame: Euromillion historical results.
+    """
 
     EUROMILLIONS_URLS = [
         "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip",
@@ -77,5 +83,5 @@ def get_results(memoize: bool = True) -> pd.DataFrame:
         "https://media.fdj.fr/static/csv/euromillions/euromillions_202002.zip",
     ]
 
-    raw_dataframes = [download_zipfile(url, memoize) for url in EUROMILLIONS_URLS]
+    raw_dataframes = [download_zipfile(url) for url in EUROMILLIONS_URLS]
     return format_dataframes(raw_dataframes)
