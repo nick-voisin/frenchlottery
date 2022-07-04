@@ -44,7 +44,7 @@ def request_url(url: str):
 
 def download_zipfile(url: str) -> pd.DataFrame:
     """
-    Donwload, extract and transform the content of Zip Archive at the given url into a Pandas DataFrame.
+    Download, extract and transform the content of Zip Archive at the given url into a Pandas DataFrame.
 
     Args:
         url (str): URL containing the Zip Archive.
