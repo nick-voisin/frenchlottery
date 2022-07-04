@@ -58,7 +58,7 @@ def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
     correct_date_format = datetime.strptime(wrong_date_format, "%d/%m/%y").strftime("%d/%m/%Y")
     raw_dataframes[2].at[0, "date_de_tirage"] = correct_date_format
 
-    # Format others dataframes with date format : dd/mm/yyyy
+    # Format other dataframes with date format : dd/mm/yyyy
     rest_dfs = [format_dataframe(df) for df in raw_dataframes[1:]]
     formatted_dfs = [first_df]
     formatted_dfs.extend(rest_dfs)
