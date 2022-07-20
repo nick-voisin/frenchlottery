@@ -8,7 +8,7 @@ from euromillions.helper import download_zipfile
 
 def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.DataFrame:
     """Formats a dataframe extracted from a Zip Archive, to the following format :
-    Date | B1 | B2 | B3 | B4 | B5 | S1 | S2, where B(i) represents the ball number and S(i) the star number.
+    Date | B1 | B2 | B3 | B4 | B5 | S1 | S2, where Bi represents the ball number and Si the star number.
     The returned dataframe is also indexed by date.
 
     Args:
@@ -31,11 +31,39 @@ def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.
     renamed_columns = ["Date", "B1", "B2", "B3", "B4", "B5", "S1", "S2"]
     mapper = dict(zip(selected_columns, renamed_columns))
 
-    df = raw_df[selected_columns]
+    df = raw_df.copy()
+    df = df[selected_columns]
     df = df.rename(columns=mapper)
     df.loc[:, "Date"] = pd.to_datetime(df.loc[:, "Date"], format=date_format)
     df.set_index("Date", inplace=True)
-    df.sort_index(inplace=True)
+    return df
+
+
+def fix_datetime_format(raw_dataframe: pd.DataFrame,
+                        row_index: int,
+                        column_name: str = "date_de_tirage",
+                        from_format: str = "%d/%m/%y",
+                        to_format: str = "%d/%m/%Y") -> pd.DataFrame:
+    """
+    Fixes an incorrect datetime format in 'from_format' to 'to_format' at specified row index in dataframe.
+    Does not mutate original array.
+
+    Args:
+        raw_dataframe: DataFrame with incorrect datetime format.
+        row_index: Row at which datetime format is incorrect.
+        column_name: Column where incorrect datetime format is to be found.
+        from_format: Initial incorrect datetime format.
+        to_format: Correct datetime format.
+
+    Returns:
+        A new dataframe with the fixed datetime format.
+    """
+
+    df = raw_dataframe.copy()
+    wrong_date_format = df.at[row_index, column_name]
+    correct_date_format = datetime.strptime(wrong_date_format, from_format).strftime(to_format)
+    df.at[row_index, column_name] = correct_date_format
+
     return df
 
 
@@ -51,19 +79,22 @@ def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
         pd.DataFrame: Clean formatted dataframe.
     """
     # Format first dataframe with date format : YYYYMMDD
-    first_df = format_dataframe(raw_dataframes[0], date_format="%Y%m%d")
+    first_formatted_df = format_dataframe(raw_dataframes[0], date_format="%Y%m%d")
 
     # Modify date of first row of the third dataframe.
-    wrong_date_format = raw_dataframes[2].at[0, "date_de_tirage"]
-    correct_date_format = datetime.strptime(wrong_date_format, "%d/%m/%y").strftime("%d/%m/%Y")
-    raw_dataframes[2].at[0, "date_de_tirage"] = correct_date_format
+    third_fixed_df = fix_datetime_format(raw_dataframes[2], row_index=0)
+    third_formatted_df = format_dataframe(third_fixed_df)
 
     # Format other dataframes with date format : dd/mm/yyyy
-    rest_dfs = [format_dataframe(df) for df in raw_dataframes[1:]]
-    formatted_dfs = [first_df]
+    rest_dfs = [format_dataframe(df) for idx, df in enumerate(raw_dataframes) if idx not in (0, 2)]
+    formatted_dfs = [first_formatted_df, third_formatted_df]
     formatted_dfs.extend(rest_dfs)
 
-    return pd.concat(formatted_dfs, axis=0)
+    # concatenate along index and sort.
+    concatenated_dataframe = pd.concat(formatted_dfs, axis=0)
+    concatenated_dataframe.sort_index(inplace=True)
+
+    return concatenated_dataframe
 
 
 def get_results() -> pd.DataFrame:
@@ -84,4 +115,5 @@ def get_results() -> pd.DataFrame:
     ]
 
     raw_dataframes = [download_zipfile(url) for url in EUROMILLIONS_URLS]
-    return format_dataframes(raw_dataframes)
+    formatted_dataframe = format_dataframes(raw_dataframes)
+    return formatted_dataframe
