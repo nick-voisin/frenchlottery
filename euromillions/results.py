@@ -12,7 +12,7 @@ def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.
     The returned dataframe is also indexed by date.
 
     Args:
-        df (pd.DataFrame): Raw dataframe extracted from the Zip Archive.
+        raw_df (pd.DataFrame): Raw dataframe extracted from the Zip Archive.
         date_format (str, optional): Date format of index. Defaults to "%d/%m/%Y".
 
     Returns:
