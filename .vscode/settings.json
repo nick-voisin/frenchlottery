@@ -1,6 +1,0 @@
-{
-    "editor.formatOnSave": true,
-    "terminal.integrated.env.windows": {
-        "PYTHONPATH": "${workspaceFolder}"
-    }
-}
