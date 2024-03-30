@@ -34,6 +34,7 @@ def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.
     df.set_index("Date", inplace=True)
     return df
 
+
 def format_dataframes(raw_dataframes: list[pd.DataFrame]) -> pd.DataFrame:
     """
     Applies the 'format_dataframe' function to provided list of dataframes 'raw_dataframes',
@@ -54,6 +55,7 @@ def format_dataframes(raw_dataframes: list[pd.DataFrame]) -> pd.DataFrame:
 
     return concatenated_dataframe
 
+
 def get_loto_results() -> pd.DataFrame:
     """
     Gets all the historical results of the french lottery from 2004 onwards into a pandas DataFrame.
@@ -63,13 +65,13 @@ def get_loto_results() -> pd.DataFrame:
         pd.DataFrame: Loto historical results.
     """
 
-    EUROMILLIONS_URLS = [
+    LOTO_URLS = [
         "https://media.fdj.fr/static-draws/csv/loto/loto_200810.zip",
         "https://media.fdj.fr/static-draws/csv/loto/loto_201703.zip",
         "https://media.fdj.fr/static-draws/csv/loto/loto_201902.zip",
         "https://media.fdj.fr/static-draws/csv/loto/loto_201911.zip",
     ]
 
-    raw_dataframes = [download_zipfile(url) for url in EUROMILLIONS_URLS]
+    raw_dataframes = [download_zipfile(url) for url in LOTO_URLS]
     formatted_dataframe = format_dataframes(raw_dataframes)
     return formatted_dataframe

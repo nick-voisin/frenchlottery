@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 import pandas as pd
 
@@ -39,11 +38,13 @@ def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.
     return df
 
 
-def fix_datetime_format(raw_dataframe: pd.DataFrame,
-                        row_index: int,
-                        column_name: str = "date_de_tirage",
-                        from_format: str = "%d/%m/%y",
-                        to_format: str = "%d/%m/%Y") -> pd.DataFrame:
+def fix_datetime_format(
+    raw_dataframe: pd.DataFrame,
+    row_index: int,
+    column_name: str = "date_de_tirage",
+    from_format: str = "%d/%m/%y",
+    to_format: str = "%d/%m/%Y",
+) -> pd.DataFrame:
     """
     Fixes an incorrect datetime format in 'from_format' to 'to_format' at specified row index in dataframe.
     Does not mutate original array.
@@ -67,7 +68,7 @@ def fix_datetime_format(raw_dataframe: pd.DataFrame,
     return df
 
 
-def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
+def format_dataframes(raw_dataframes: list[pd.DataFrame]) -> pd.DataFrame:
     """Applies the 'format_dataframe' function to provided list of dataframes 'raw_dataframes', and concatenates
     them into one dataframe.
     Also performs a slight cleanup of an erroneous date format on the first line of the third dataframe.
