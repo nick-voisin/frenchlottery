@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from euromillions.helper import download_zipfile
+from lottery.helper import download_zipfile
 
 
 def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.DataFrame:
@@ -97,7 +97,7 @@ def format_dataframes(raw_dataframes: List[pd.DataFrame]) -> pd.DataFrame:
     return concatenated_dataframe
 
 
-def get_results() -> pd.DataFrame:
+def get_euromillions_results() -> pd.DataFrame:
     """Gets all the historical results of the Euromillion lottery from 2004 onwards into a pandas DataFrame.
     Data is downloaded from the 'Francaise des Jeux' website.
 
@@ -106,12 +106,12 @@ def get_results() -> pd.DataFrame:
     """
 
     EUROMILLIONS_URLS = [
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_200402.zip",
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_201105.zip",
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_201402.zip",
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_201609.zip",
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_201902.zip",
-        "https://media.fdj.fr/static/csv/euromillions/euromillions_202002.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_200402.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_201105.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_201402.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_201609.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_201902.zip",
+        "https://media.fdj.fr/static-draws/csv/euromillions/euromillions_202002.zip",
     ]
 
     raw_dataframes = [download_zipfile(url) for url in EUROMILLIONS_URLS]
