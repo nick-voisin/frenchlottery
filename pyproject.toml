@@ -9,7 +9,6 @@ license = "MIT"
 python = "^3.9"
 requests = "^2.27.1"
 pandas = "^1.4.1"
-ipykernel = "^6.9.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
