@@ -2,37 +2,46 @@ import pandas as pd
 
 from lottery.helper import download_zipfile
 
+# see https://www.fdj.fr/jeux-de-tirage/loto/historique
+LOTO_URLS = [
+    # 2008 - 2017
+    "https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afm6",
+    # 2017 - 2019
+    "https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afn6",
+    # 2019
+    "https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afo6",
+    # 2019 - 2025
+    "https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/documentations/1a2b3c4d-9876-4562-b3fc-2c963f66afp6"
+]
+
 
 def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.DataFrame:
-    """Formats a dataframe extracted from a Zip Archive, to the following format :
+    """Formats a dataframe extracted from a zip archive, to the following format :
     Date | B1 | B2 | B3 | B4 | B5 | S1, where Bi represents the ball number and Si the star number.
     The returned dataframe is also indexed by date.
 
     Args:
-        raw_df (pd.DataFrame): Raw dataframe extracted from the Zip Archive.
+        raw_df (pd.DataFrame): Raw dataframe extracted from the zip archive.
         date_format (str, optional): Date format of index. Defaults to "%d/%m/%Y".
 
     Returns:
         pd.DataFrame: Formatted dataframe.
     """
-    selected_columns = [
-        "date_de_tirage",
-        "boule_1",
-        "boule_2",
-        "boule_3",
-        "boule_4",
-        "boule_5",
-        "numero_chance",
-    ]
-    renamed_columns = ["Date", "B1", "B2", "B3", "B4", "B5", "S1"]
-    mapper = dict(zip(selected_columns, renamed_columns))
+    columns_mapping = {
+        "date_de_tirage": "Date",
+        "boule_1": "B1",
+        "boule_2": "B2",
+        "boule_3": "B3",
+        "boule_4": "B4",
+        "boule_5": "B5",
+        "numero_chance": "S1",
+    }
 
     df = raw_df.copy()
-    df = df[selected_columns]
-    df = df.rename(columns=mapper)
-    df.loc[:, "Date"] = pd.to_datetime(df.loc[:, "Date"], format=date_format)
-    df.set_index("Date", inplace=True)
-    return df
+    df = df[columns_mapping.keys()]
+    df = df.rename(columns=columns_mapping)
+    df["Date"] = pd.to_datetime(df["Date"], format=date_format)
+    return df.set_index("Date")
 
 
 def format_dataframes(raw_dataframes: list[pd.DataFrame]) -> pd.DataFrame:
@@ -58,19 +67,12 @@ def format_dataframes(raw_dataframes: list[pd.DataFrame]) -> pd.DataFrame:
 
 def get_loto_results() -> pd.DataFrame:
     """
-    Gets all the historical results of the french lottery from 2004 onwards into a pandas DataFrame.
-    Data is downloaded from the 'Francaise des Jeux' website.
+    Gets all the historical results of the French lottery from 2004 onwards into a pandas DataFrame.
+    Data is downloaded from the 'Française des Jeux' website: 'https://www.fdj.fr/'.
 
     Returns:
-        pd.DataFrame: Loto historical results.
+        pd.DataFrame: DataFrame of historical results of the French lottery.
     """
-
-    LOTO_URLS = [
-        "https://media.fdj.fr/static-draws/csv/loto/loto_200810.zip",
-        "https://media.fdj.fr/static-draws/csv/loto/loto_201703.zip",
-        "https://media.fdj.fr/static-draws/csv/loto/loto_201902.zip",
-        "https://media.fdj.fr/static-draws/csv/loto/loto_201911.zip",
-    ]
 
     raw_dataframes = [download_zipfile(url) for url in LOTO_URLS]
     formatted_dataframe = format_dataframes(raw_dataframes)

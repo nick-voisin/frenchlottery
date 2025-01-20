@@ -142,3 +142,8 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+# data folder
+/data
+
+.python-version

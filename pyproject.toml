@@ -1,21 +1,19 @@
 [tool.poetry]
 name = "lottery"
-version = "0.3.0"
-description = ""
+version = "1.0.0"
+description = "Simple tool to retrieve lottery data from FDJ"
 authors = ["Nicolas Voisin <voisin.nicolas@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 requests = "^2.27.1"
-pandas = "^1.4.1"
+pandas = "^2.2.2"
 
-[tool.poetry.dev-dependencies]
-black = "^22.1.0"
-ipykernel = "^6.0.3"
-flake8 = "^4.0.1"
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
 
-[tool.black]
+[tool.ruff]
 line-length = 120
 
 [build-system]
