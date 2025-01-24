@@ -33,4 +33,5 @@ jobs:
         black . -l 120
     - name: Run tests
       run: |
+        pip install .
         pytest
