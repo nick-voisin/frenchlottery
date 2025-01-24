@@ -13,6 +13,9 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)"
 ]
 
+[project.urls]
+Homepage = "https://github.com/nick-voisin/lottery"
+Issues = "https://github.com/nick-voisin/lottery/issues"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
