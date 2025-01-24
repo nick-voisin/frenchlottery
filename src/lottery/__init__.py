@@ -1,4 +1,4 @@
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 __author__ = "Nicolas Voisin"
 
 from lottery.euromillions_helper import get_euromillions_results
