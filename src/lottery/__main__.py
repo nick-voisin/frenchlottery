@@ -1,4 +1,5 @@
 import argparse
+
 from lottery import get_euromillions_results, get_loto_results
 
 if __name__ == "__main__":

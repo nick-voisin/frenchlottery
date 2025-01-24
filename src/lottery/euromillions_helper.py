@@ -47,11 +47,11 @@ def format_dataframe(raw_df: pd.DataFrame, date_format: str = "%d/%m/%Y") -> pd.
 
 
 def fix_datetime_format(
-        raw_dataframe: pd.DataFrame,
-        row_index: int,
-        column_name: str = "date_de_tirage",
-        from_format: str = "%d/%m/%y",
-        to_format: str = "%d/%m/%Y",
+    raw_dataframe: pd.DataFrame,
+    row_index: int,
+    column_name: str = "date_de_tirage",
+    from_format: str = "%d/%m/%y",
+    to_format: str = "%d/%m/%Y",
 ) -> pd.DataFrame:
     """
     Fixes an incorrect datetime format in 'from_format' to 'to_format' at specified row index in dataframe.

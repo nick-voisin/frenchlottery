@@ -24,3 +24,6 @@ loto_res = get_loto_results()
 euro_res = get_euromillions_results()
 ...
 ```
+
+### TODO
+- If `--lines` parameter is specified, no need to pull entire history. The user will most likely pull 10-15 lines.

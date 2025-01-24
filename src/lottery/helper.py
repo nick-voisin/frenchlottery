@@ -1,9 +1,9 @@
-import requests
 import io
-from zipfile import ZipFile
 from functools import cache
+from zipfile import ZipFile
 
 import pandas as pd
+import requests
 
 
 def read_zipfile(zip_file: ZipFile) -> pd.DataFrame:
