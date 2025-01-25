@@ -1,6 +1,6 @@
 [project]
 name = "frenchlottery"
-version = "0.1.0"
+version = "0.2.0"
 description = "Get up-to-date lottery draws from FDJ"
 authors = [
     {name = "Nicolas Voisin",email = "voisin.nicolas@gmail.com"}
