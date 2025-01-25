@@ -1,4 +1,4 @@
-name: lottery
+name: Build and Test Python Package
 
 on:
   push:
