@@ -1,5 +1,7 @@
 # frenchlottery
 
+[![CI - Test](https://github.com/nick-voisin/frenchlottery/actions/workflows/python-test.yml/badge.svg)](https://github.com/nick-voisin/frenchlottery/actions/workflows/python-test.yml) [![PyPI Latest Release](https://img.shields.io/pypi/v/frenchlottery.svg)](https://pypi.org/project/frenchlottery/) ![License](https://img.shields.io/pypi/l/frenchlottery.svg)
+
 Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) website.
 
 ## Installation
@@ -10,9 +12,9 @@ Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) w
 
 ### From the command line (activated env with lottery installed)
 
-- French lottery (default):
+- French lottery (default) with last 15 draws:
   ``python -m frenchlottery -n 15``
-- Euromillions lottery:
+- Euromillions lottery with last 5 draws:
   ``python -m frenchlottery source=euro -n 5``
 
 ### Within your project
@@ -29,5 +31,5 @@ euro_res = get_euromillions_results()
 - If `--lines` parameter is specified, no need to pull entire history. The user will most likely pull 10-15 lines.
 
 ## NB
-- This is no way affiliated to FDJ. I'm just using it as a source of historical data.
-- The initial name for the package was `lottery` which was way more elegant and worked perfectly within test PyPi (https://test.pypi.org/project/lottery/). However when publishing to PyPI, the name isn't allowed.. Great..!
+- This is in no way affiliated to FDJ. I'm just using it as a source of historical data.
+- The initial name for the package was `lottery` which was way more elegant and worked perfectly within test PyPI (https://test.pypi.org/project/lottery/). However when publishing to PyPI, the name isn't allowed.. Great..!
