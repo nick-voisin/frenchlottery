@@ -1,13 +1,13 @@
 import argparse
 
-from lottery import get_euromillions_results, get_loto_results
+from frenchlottery import get_euromillions_results, get_loto_results
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="lottery", description="Quickly retrieve lottery results", epilog="Lottery Results"
+        prog="frenchlottery", description="Quickly retrieve lottery results", epilog="Lottery Results From FDJ"
     )
 
-    parser.add_argument("-s", "--source", help="Source")
+    parser.add_argument("-s", "--source", default="loto", help="Source")
     parser.add_argument("-n", "--lines", help="Output the last lines")
     args = parser.parse_args()
 

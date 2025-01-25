@@ -1,7 +1,7 @@
 import pytest
 
-from lottery.euromillions_helper import EUROMILLIONS_URLS, format_dataframes
-from lottery.helper import download_zipfile
+from frenchlottery.euromillions_helper import EUROMILLIONS_URLS, format_dataframes
+from frenchlottery.helper import download_zipfile
 
 
 @pytest.mark.parametrize("url", EUROMILLIONS_URLS)

@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from lottery.helper import download_zipfile
+from frenchlottery.helper import download_zipfile
 
 # see https://www.fdj.fr/jeux-de-tirage/euromillions-my-million/historique
 EUROMILLIONS_URLS = [

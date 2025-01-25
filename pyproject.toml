@@ -1,5 +1,5 @@
 [project]
-name = "lottery"
+name = "frenchlottery"
 version = "0.1.0"
 description = "Get up-to-date lottery draws from FDJ"
 authors = [
@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/nick-voisin/lottery"
-Issues = "https://github.com/nick-voisin/lottery/issues"
+Homepage = "https://github.com/nick-voisin/frenchlottery"
+Issues = "https://github.com/nick-voisin/frenchlottery/issues"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
