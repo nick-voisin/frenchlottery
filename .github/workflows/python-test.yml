@@ -2,11 +2,11 @@ name: Build and Test Python Package
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ master ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ master ]
   workflow_dispatch:
-    branches: [ $default-branch ]
+    branches: [ master ]
 
 jobs:
   build:
