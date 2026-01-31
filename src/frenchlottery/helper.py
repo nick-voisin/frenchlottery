@@ -1,14 +1,18 @@
+
 import io
 from functools import cache
 from zipfile import ZipFile
 
-import pandas as pd
+import polars as pl
 import requests
 
+from frenchlottery.constants import EUROMILLIONS_MAPPING, LOTO_MAPPING
+from frenchlottery.domain import LotterySource
 
-def read_zipfile(zip_file: ZipFile) -> pd.DataFrame:
+
+def read_zipfile(zip_file: ZipFile, columns: list[str] | None = None) -> pl.DataFrame:
     """
-    Reads the contents of the first file in the Zip Archive 'zip_file' and converts it to a Pandas DataFrame.
+    Reads the contents of the first file in the Zip Archive 'zip_file' and converts it to a Polars DataFrame.
 
     Args:
         zip_file (ZipFile): Zip archive to read and extract.
@@ -27,8 +31,14 @@ def read_zipfile(zip_file: ZipFile) -> pd.DataFrame:
 
     try:
         data = zip_file.read(name=zip_file.filelist[0].filename)
-        text_raw = data.decode("latin-1")
-        return pd.read_csv(io.StringIO(text_raw), sep=";", index_col=False)
+        return pl.read_csv(
+            data,
+            separator=";",
+            columns=columns,
+            encoding="latin-1",
+            truncate_ragged_lines=True,
+            schema_overrides={"date_de_tirage": pl.String},
+        )
 
     except Exception as e:
         raise IOError("Could not extract data from zipfile.") from e
@@ -58,24 +68,67 @@ def request_url(url: str):
     return response
 
 
-def download_zipfile(url: str) -> pd.DataFrame:
+def download_zipfile(url: str, source: LotterySource) -> pl.DataFrame:
     """
-    Downloads, extracts and reads the content of the first file located in zip archive at the given url
-    into a Pandas DataFrame.
+    Downloads, extracts and reads the content of the first file located in zip archive at the given url into a Polars DataFrame.
 
     Args:
         url (str): URL containing the Zip Archive.
+        source (LotterySource): Lottery source type. Required to select proper columns.
 
     Raises:
         IOError: Error downloading the Zip Archive for provided url.
 
     Returns:
-        pd.DataFrame: Content of the first file in the Zip Archive for provided url.
+        pl.DataFrame: Content of the first file in the Zip Archive for provided url.
 
     """
     try:
         response = request_url(url)
         zip_file = ZipFile(io.BytesIO(response.content))
-        return read_zipfile(zip_file)
+        match source:
+            case LotterySource.LOTO:
+                return read_zipfile(
+                    zip_file,
+                    columns=list(LOTO_MAPPING.keys()),
+                )
+            case LotterySource.EUROMILLIONS:
+                return read_zipfile(
+                    zip_file,
+                    columns=list(EUROMILLIONS_MAPPING.keys()),
+                )
+            case _:
+                raise ValueError(f"Unknown lottery source type: {source}")
     except Exception as e:
-        raise IOError(f"Unable to download data from url : {url}") from e
+        raise IOError(f"Unable to download data from url {url} - {e}") from e
+
+
+def format_dataframe(raw_df: pl.DataFrame, source: LotterySource, date_format: str = "%d/%m/%Y") -> pl.DataFrame:
+    """Formats a dataframe extracted from a zip archive using source-specific column mappings.
+
+    The formatted dataframe contains standardized lowercase column names (date, b1, b2, ..., e1, e2, etc.)
+    and is sorted by date.
+
+    Args:
+        raw_df (pl.DataFrame): Raw dataframe extracted from the zip archive.
+        source (LotterySource): Lottery source type to determine the appropriate column mapping.
+        date_format (str, optional): Date format for parsing. Defaults to "%d/%m/%Y".
+
+    Returns:
+        pl.DataFrame: Formatted dataframe with renamed columns and parsed date.
+    """
+
+    match source:
+        case LotterySource.EUROMILLIONS:
+            mapping = EUROMILLIONS_MAPPING
+        case LotterySource.LOTO:
+            mapping = LOTO_MAPPING
+        case _:
+            raise ValueError(f"Unknown lottery source type: {source}")
+    df = (
+        raw_df.select(list(mapping.keys()))
+        .rename(mapping)
+        .with_columns(pl.col("date").str.strptime(pl.Date, format=date_format))
+        .sort("date")
+    )
+    return df
