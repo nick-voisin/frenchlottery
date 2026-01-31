@@ -26,5 +26,5 @@ requests==2.32.3
     # via frenchlottery
 tomli==2.2.1 ; python_full_version < '3.11'
     # via pytest
-urllib3==2.3.0
+urllib3==2.6.3
     # via requests
