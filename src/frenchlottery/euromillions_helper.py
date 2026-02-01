@@ -1,9 +1,7 @@
 from datetime import datetime
-from pathlib import Path
 
 import polars as pl
-
-from frenchlottery.constants import EUROMILLIONS_URLS
+from frenchlottery.domain import get_source_urls
 from frenchlottery.helper import LotterySource, download_zipfile, format_dataframe
 
 
@@ -60,7 +58,11 @@ def format_dataframes(raw_dataframes: list[pl.DataFrame]) -> pl.DataFrame:
     third_formatted_df = format_dataframe(third_fixed_df, source=LotterySource.EUROMILLIONS)
 
     # Format other dataframes with date format : dd/mm/yyyy
-    rest_dfs = [format_dataframe(df, source=LotterySource.EUROMILLIONS) for idx, df in enumerate(raw_dataframes) if idx not in (0, 2)]
+    rest_dfs = [
+        format_dataframe(df, source=LotterySource.EUROMILLIONS)
+        for idx, df in enumerate(raw_dataframes)
+        if idx not in (0, 2)
+    ]
     formatted_dfs = [first_formatted_df, third_formatted_df]
     formatted_dfs.extend(rest_dfs)
 
@@ -79,38 +81,7 @@ def generate_results() -> pl.DataFrame:
     Returns:
         pl.DataFrame: Euromillions historical results.
     """
-
-    raw_dataframes = [download_zipfile(url, source=LotterySource.EUROMILLIONS) for url in EUROMILLIONS_URLS.values()]
+    urls = get_source_urls(LotterySource.EUROMILLIONS)
+    raw_dataframes = [download_zipfile(url, source=LotterySource.EUROMILLIONS) for url in urls.values()]
     formatted_dataframe = format_dataframes(raw_dataframes)
-    return formatted_dataframe
-
-
-def get_last_euromillions_results() -> pl.DataFrame:
-    """
-    Returns the last results of the Euromillions lottery i.e. from 2020 and onwards into a polars DataFrame.
-    Data is downloaded from the 'Francaise des Jeux' website.
-
-    Returns:
-        pl.DataFrame: Euromillions historical results.
-    """
-
-    raw_dataframe = download_zipfile(list(EUROMILLIONS_URLS.values())[-1], source=LotterySource.EUROMILLIONS)
-    formatted_dataframe = format_dataframe(raw_dataframe, source=LotterySource.EUROMILLIONS)
-    return formatted_dataframe
-
-
-def get_full_euromillions_results() -> pl.DataFrame:
-    """
-    Gets all the historical results of the Euromillions lottery from 2004 onwards into a polars DataFrame.
-    Data is downloaded from the 'Francaise des Jeux' website.
-
-    Returns:
-        pl.DataFrame: Euromillions historical results.
-    """
-
-    # read stored csv file from data folder, already formatted
-    data_folder = Path(__file__).parent / "data"
-    historical_data = pl.read_csv(data_folder / "euro_2004_2020.csv", separator=",")
-    last_data = get_last_euromillions_results()
-    formatted_dataframe = pl.concat([historical_data, last_data]).sort("date")
     return formatted_dataframe

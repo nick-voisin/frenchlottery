@@ -1,7 +1,8 @@
 import pytest
 
+from frenchlottery.constants import LOTO_URLS
 from frenchlottery.helper import LotterySource, download_zipfile
-from frenchlottery.loto_helper import LOTO_URLS, format_dataframe
+from frenchlottery.loto_helper import format_dataframe
 
 EXPECTED_LOTO_COUNTS = {
     # "1976-2008": 4858,

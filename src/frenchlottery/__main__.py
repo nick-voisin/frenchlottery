@@ -1,6 +1,8 @@
 import argparse
 
-from frenchlottery import get_last_euromillions_results , get_last_loto_results
+from frenchlottery import get_last_results, get_full_results
+from frenchlottery.domain import get_source_from_code
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -9,20 +11,17 @@ if __name__ == "__main__":
 
     parser.add_argument("-s", "--source", default="loto", help="Source", choices=["loto", "euro"])
     parser.add_argument("-n", "--lines", help="Output the last lines")
-    args = parser.parse_args()
+    parser.add_argument("-f", "--full", action="store_true", help="Output full results")
 
-    source = args.source
-    lines = args.lines
+    parsed_args = parser.parse_args()
 
-    match args.source:
-        case "euro":
-            res = get_last_euromillions_results()
-        case "loto":
-            res = get_last_loto_results()
-        case _:
-            raise ValueError("Invalid source: either 'euro' or 'loto'")
-
-    if lines:
-        print(res.tail(int(lines)))
+    source = get_source_from_code(parsed_args.source)
+    if parsed_args.full:
+        data = get_full_results(source)
     else:
-        print(res)
+        data = get_last_results(source)
+
+    if parsed_args.lines:
+        print(data.tail(int(parsed_args.lines)))
+    else:
+        print(data)

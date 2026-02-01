@@ -1,5 +1,6 @@
 import pytest
-from frenchlottery.euromillions_helper import EUROMILLIONS_URLS, format_dataframes
+from frenchlottery.constants import EUROMILLIONS_URLS
+from frenchlottery.euromillions_helper import format_dataframes
 from frenchlottery.helper import LotterySource, download_zipfile
 
 EXPECTED_EURO_COUNTS = {

@@ -6,8 +6,7 @@ from zipfile import ZipFile
 import polars as pl
 import requests
 
-from frenchlottery.constants import EUROMILLIONS_MAPPING, LOTO_MAPPING
-from frenchlottery.domain import LotterySource
+from frenchlottery.domain import LotterySource, get_historical_data_path, get_source_mapping, get_source_urls
 
 
 def read_zipfile(zip_file: ZipFile, columns: list[str] | None = None) -> pl.DataFrame:
@@ -86,19 +85,8 @@ def download_zipfile(url: str, source: LotterySource) -> pl.DataFrame:
     try:
         response = request_url(url)
         zip_file = ZipFile(io.BytesIO(response.content))
-        match source:
-            case LotterySource.LOTO:
-                return read_zipfile(
-                    zip_file,
-                    columns=list(LOTO_MAPPING.keys()),
-                )
-            case LotterySource.EUROMILLIONS:
-                return read_zipfile(
-                    zip_file,
-                    columns=list(EUROMILLIONS_MAPPING.keys()),
-                )
-            case _:
-                raise ValueError(f"Unknown lottery source type: {source}")
+        col_mapping = get_source_mapping(source)
+        return read_zipfile(zip_file, columns=list(col_mapping.keys()))
     except Exception as e:
         raise IOError(f"Unable to download data from url {url} - {e}") from e
 
@@ -118,13 +106,7 @@ def format_dataframe(raw_df: pl.DataFrame, source: LotterySource, date_format: s
         pl.DataFrame: Formatted dataframe with renamed columns and parsed date.
     """
 
-    match source:
-        case LotterySource.EUROMILLIONS:
-            mapping = EUROMILLIONS_MAPPING
-        case LotterySource.LOTO:
-            mapping = LOTO_MAPPING
-        case _:
-            raise ValueError(f"Unknown lottery source type: {source}")
+    mapping = get_source_mapping(source)
     df = (
         raw_df.select(list(mapping.keys()))
         .rename(mapping)
@@ -132,3 +114,37 @@ def format_dataframe(raw_df: pl.DataFrame, source: LotterySource, date_format: s
         .sort("date")
     )
     return df
+
+
+def get_last_results(source: LotterySource) -> pl.DataFrame:
+    """
+    Returns the last results of the specified lottery source into a polars DataFrame.
+
+    Args:
+        source (LotterySource): Lottery source type.
+
+    Returns:
+        pl.DataFrame: Historical results of the specified lottery source.
+    """
+    urls = get_source_urls(source)
+    raw_dataframe = download_zipfile(list(urls.values())[-1], source=source)
+    formatted_dataframe = format_dataframe(raw_dataframe, source=source)
+    return formatted_dataframe
+
+
+def get_full_results(source: LotterySource) -> pl.DataFrame:
+    """
+    Returns the full historical results of the specified lottery source into a polars DataFrame.
+
+    Args:
+        source (LotterySource): Lottery source type.
+
+    Returns:
+        pl.DataFrame: Full historical results of the specified lottery source.
+    """
+
+    historical_data_path = get_historical_data_path(source)
+    historical_data = pl.read_csv(historical_data_path, separator=",")
+    live_data = get_last_results(source)
+    formatted_dataframe = pl.concat([historical_data, live_data]).sort("date")
+    return formatted_dataframe
