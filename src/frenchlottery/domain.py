@@ -4,6 +4,7 @@ from pathlib import Path
 from frenchlottery.constants import EUROMILLIONS_MAPPING, EUROMILLIONS_URLS, LOTO_MAPPING, LOTO_URLS
 
 class LotterySource(Enum):
+    """Enum representing different lottery sources."""
     LOTO = "loto"
     EUROMILLIONS = "euromillions"
 
