@@ -6,7 +6,7 @@ Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) w
 
 ## Installation
 
-``pip install frenchlottery``
+``pip install frenchlottery`` or ``uv add frenchlottery``
 
 ## Usage
 
