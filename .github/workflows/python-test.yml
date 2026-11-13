@@ -20,18 +20,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install pytest black
-        pip install -r requirements.txt
+        uv sync --locked --all-groups
     - name: Format with black
       run: |
-        black . -l 120
+        uv run --with black black . -l 120
     - name: Run tests
       run: |
-        pip install .
-        pytest
+        uv run pytest
