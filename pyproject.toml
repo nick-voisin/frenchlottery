@@ -1,6 +1,6 @@
 [project]
 name = "frenchlottery"
-version = "0.4.0"
+version = "0.5.0"
 description = "Get up-to-date lottery draws from FDJ"
 authors = [{ name = "Nicolas Voisin", email = "voisin.nicolas@gmail.com" }]
 license = { text = "MIT" }
@@ -24,8 +24,8 @@ Homepage = "https://github.com/nick-voisin/frenchlottery"
 Issues = "https://github.com/nick-voisin/frenchlottery/issues"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.13.8,<0.14"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
