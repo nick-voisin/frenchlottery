@@ -15,6 +15,9 @@ dependencies = [
     "requests>=2.32.5",
 ]
 
+[project.scripts]
+frenchlottery = "frenchlottery.__main__:main"
+
 [dependency-groups]
 dev = ["pytest>=8.3.4"]
 

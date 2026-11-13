@@ -3,7 +3,9 @@ import argparse
 from frenchlottery import get_full_results, get_last_results
 from frenchlottery.domain import get_source_from_code
 
-if __name__ == "__main__":
+
+def main() -> None:
+    """Run the French Lottery command-line interface."""
     parser = argparse.ArgumentParser(
         prog="frenchlottery", description="Quickly retrieve lottery results", epilog="Lottery Results From FDJ"
     )
@@ -24,3 +26,7 @@ if __name__ == "__main__":
         print(data.tail(int(parsed_args.lines)))
     else:
         print(data)
+
+
+if __name__ == "__main__":
+    main()

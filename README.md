@@ -6,14 +6,26 @@ Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) w
 
 ## Installation
 
-``pip install frenchlottery`` or ``uv add frenchlottery``
+```bash
+pip install frenchlottery
+# or
+uv add frenchlottery
+```
+
+To install the `frenchlottery` command globally with uv:
+
+```bash
+uv tool install frenchlottery
+```
 
 ## Usage
 
-### From the command line (activated env with lottery installed)
+### From the command line
 
 - French lottery (default) with last 5 draws:
-  ``python -m frenchlottery --source=loto -n=5``
+  ```bash
+  frenchlottery --source loto --lines 5
+  ```
   ```
   ┌────────────┬─────┬─────┬─────┬─────┬─────┬─────┐
   │ date       ┆ b1  ┆ b2  ┆ b3  ┆ b4  ┆ b5  ┆ e1  │
@@ -28,7 +40,9 @@ Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) w
   └────────────┴─────┴─────┴─────┴─────┴─────┴─────┘
   ```
 - Euromillions lottery with last 10 draws:
-  ``python -m frenchlottery source=euro -n=10``
+  ```bash
+  frenchlottery --source euro --lines 10
+  ```
   ```
   ┌────────────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
   │ date       ┆ b1  ┆ b2  ┆ b3  ┆ b4  ┆ b5  ┆ e1  ┆ e2  │
@@ -51,10 +65,11 @@ Simple Python package to retrieve lottery data from [FDJ](https://www.fdj.fr/) w
 ### Within your project
 
 ```python
-from frenchlottery import get_last_euromillions_results, get_last_loto_results
+from frenchlottery import get_last_results
+from frenchlottery.domain import LotterySource
 
-loto_res = get_last_loto_results()
-euro_res = get_last_euromillions_results()
+loto_res = get_last_results(LotterySource.LOTO)
+euro_res = get_last_results(LotterySource.EUROMILLIONS)
 ...
 ```
 
