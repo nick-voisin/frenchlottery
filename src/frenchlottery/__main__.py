@@ -1,8 +1,7 @@
 import argparse
 
-from frenchlottery import get_last_results, get_full_results
+from frenchlottery import get_full_results, get_last_results
 from frenchlottery.domain import get_source_from_code
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
