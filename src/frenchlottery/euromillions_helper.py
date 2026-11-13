@@ -1,8 +1,10 @@
+from collections.abc import Mapping
 from datetime import datetime
 
 import polars as pl
-from frenchlottery.domain import get_source_urls
-from frenchlottery.helper import LotterySource, download_zipfile, format_dataframe
+
+from frenchlottery.domain import LotterySource, get_source_urls
+from frenchlottery.helper import download_zipfile, format_dataframe
 
 
 def fix_datetime_format(
@@ -27,53 +29,49 @@ def fix_datetime_format(
         A new dataframe with the fixed datetime format.
     """
 
-    col_vals = raw_dataframe[column_name].to_list()
-    wrong_date_format = col_vals[row_index]
+    wrong_date_format = raw_dataframe[column_name][row_index]
     correct_date_format = datetime.strptime(wrong_date_format, from_format).strftime(to_format)
-    col_vals[row_index] = correct_date_format
-    df = raw_dataframe.with_columns(pl.Series(column_name, col_vals))
-    return df
+    return (
+        raw_dataframe.with_row_index("__row_index")
+        .with_columns(
+            pl.when(pl.col("__row_index") == row_index)
+            .then(pl.lit(correct_date_format))
+            .otherwise(pl.col(column_name))
+            .alias(column_name)
+        )
+        .drop("__row_index")
+    )
 
 
-def format_dataframes(raw_dataframes: list[pl.DataFrame]) -> pl.DataFrame:
+def format_dataframes(raw_dataframes: Mapping[str, pl.DataFrame]) -> pl.DataFrame:
     """
     Applies the 'format_dataframe' function to provided list of dataframes 'raw_dataframes', and concatenates
     them into one dataframe.
 
-    Also performs a slight cleanup of an erroneous date format on the first line of the third dataframe (2014-2016).
+    Also performs a slight cleanup of an erroneous date format in the 2014-2016 data.
 
     NB: Intended for internal use only.
 
     Args:
-        raw_dataframes (List[pd.DataFrame]): Dataframes provided from zip archive extraction.
+        raw_dataframes: Dataframes provided from zip archive extraction, keyed by period.
 
     Returns:
-        pd.DataFrame: Clean formatted dataframe.
+        A clean, formatted Polars DataFrame.
     """
-    # Format first dataframe with date format : YYYYMMDD
-    first_formatted_df = format_dataframe(raw_dataframes[0], source=LotterySource.EUROMILLIONS, date_format="%Y%m%d")
+    formatted_dfs = []
+    for period, raw_dataframe in raw_dataframes.items():
+        if period == "2014-2016":
+            raw_dataframe = fix_datetime_format(raw_dataframe, row_index=0)
 
-    # Modify date of first row of the third dataframe.
-    third_fixed_df = fix_datetime_format(raw_dataframes[2], row_index=0)
-    third_formatted_df = format_dataframe(third_fixed_df, source=LotterySource.EUROMILLIONS)
+        date_format = "%Y%m%d" if period == "2004-2011" else "%d/%m/%Y"
+        formatted_dfs.append(
+            format_dataframe(raw_dataframe, source=LotterySource.EUROMILLIONS, date_format=date_format)
+        )
 
-    # Format other dataframes with date format : dd/mm/yyyy
-    rest_dfs = [
-        format_dataframe(df, source=LotterySource.EUROMILLIONS)
-        for idx, df in enumerate(raw_dataframes)
-        if idx not in (0, 2)
-    ]
-    formatted_dfs = [first_formatted_df, third_formatted_df]
-    formatted_dfs.extend(rest_dfs)
-
-    # concatenate along Date and sort.
-    concatenated_dataframe = pl.concat(formatted_dfs)
-    concatenated_dataframe = concatenated_dataframe.sort("date")
-
-    return concatenated_dataframe
+    return pl.concat(formatted_dfs).sort("date")
 
 
-def generate_results() -> pl.DataFrame:
+def generate_euro_results() -> pl.DataFrame:
     """
     Gets all the historical results of the Euromillions lottery from 2004 onwards into a polars DataFrame.
     Data is downloaded from the 'Francaise des Jeux' website.
@@ -82,6 +80,8 @@ def generate_results() -> pl.DataFrame:
         pl.DataFrame: Euromillions historical results.
     """
     urls = get_source_urls(LotterySource.EUROMILLIONS)
-    raw_dataframes = [download_zipfile(url, source=LotterySource.EUROMILLIONS) for url in urls.values()]
+    raw_dataframes = {
+        period: download_zipfile(url, source=LotterySource.EUROMILLIONS) for period, url in urls.items()
+    }
     formatted_dataframe = format_dataframes(raw_dataframes)
     return formatted_dataframe

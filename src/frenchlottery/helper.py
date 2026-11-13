@@ -1,4 +1,3 @@
-
 import io
 from functools import cache
 from zipfile import ZipFile
@@ -40,7 +39,7 @@ def read_zipfile(zip_file: ZipFile, columns: list[str] | None = None) -> pl.Data
         )
 
     except Exception as e:
-        raise IOError("Could not extract data from zipfile.") from e
+        raise OSError("Could not extract data from zipfile.") from e
 
 
 @cache
@@ -63,7 +62,7 @@ def request_url(url: str):
     """
     response = requests.get(url)
     if response.status_code != 200:
-        raise IOError(f"Request response returned with code {response.status_code}.")
+        raise OSError(f"Request response returned with code {response.status_code}.")
     return response
 
 
@@ -88,7 +87,7 @@ def download_zipfile(url: str, source: LotterySource) -> pl.DataFrame:
         col_mapping = get_source_mapping(source)
         return read_zipfile(zip_file, columns=list(col_mapping.keys()))
     except Exception as e:
-        raise IOError(f"Unable to download data from url {url} - {e}") from e
+        raise OSError(f"Unable to download data from url {url} - {e}") from e
 
 
 def format_dataframe(raw_df: pl.DataFrame, source: LotterySource, date_format: str = "%d/%m/%Y") -> pl.DataFrame:
